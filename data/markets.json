@@ -1,14 +1,14 @@
 {
- "fetched_utc": "2026-11-04T01:55:23.583830Z",
+ "fetched_utc": "2026-11-04T02:03:20.676636Z",
  "kalshi": {
   "house": {
    "ticker": "CONTROLH-2026",
    "markets": [
     {
      "name": "Democratic Party",
-     "last": "0.9940",
-     "bid": "0.9940",
-     "ask": "0.9950",
+     "last": "0.9950",
+     "bid": "0.9950",
+     "ask": "0.9960",
      "status": "active",
      "result": ""
     },
@@ -27,17 +27,17 @@
    "markets": [
     {
      "name": "Democratic Party",
-     "last": "0.9860",
-     "bid": "0.9850",
-     "ask": "0.9860",
+     "last": "0.9900",
+     "bid": "0.9900",
+     "ask": "0.9940",
      "status": "active",
      "result": ""
     },
     {
      "name": "Republican Party",
-     "last": "0.0170",
-     "bid": "0.0140",
-     "ask": "0.0170",
+     "last": "0.0120",
+     "bid": "0.0100",
+     "ask": "0.0120",
      "status": "active",
      "result": ""
     }
@@ -56,9 +56,9 @@
     },
     {
      "name": "Steve Hilton",
-     "last": "0.0170",
-     "bid": "0.0120",
-     "ask": "0.0170",
+     "last": "0.0150",
+     "bid": "0.0110",
+     "ask": "0.0150",
      "status": "active",
      "result": ""
     }
