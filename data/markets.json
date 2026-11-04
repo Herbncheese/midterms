@@ -1,22 +1,22 @@
 {
- "fetched_utc": "2026-11-04T02:03:20.676636Z",
+ "fetched_utc": "2026-11-04T02:11:38.241029Z",
  "kalshi": {
   "house": {
    "ticker": "CONTROLH-2026",
    "markets": [
     {
      "name": "Democratic Party",
-     "last": "0.9950",
-     "bid": "0.9950",
-     "ask": "0.9960",
+     "last": "0.9940",
+     "bid": "0.9940",
+     "ask": "0.9950",
      "status": "active",
      "result": ""
     },
     {
      "name": "Republican Party",
      "last": "0.0060",
-     "bid": "0.0050",
-     "ask": "0.0060",
+     "bid": "0.0060",
+     "ask": "0.0070",
      "status": "active",
      "result": ""
     }
@@ -27,17 +27,17 @@
    "markets": [
     {
      "name": "Democratic Party",
-     "last": "0.9900",
+     "last": "0.9910",
      "bid": "0.9900",
-     "ask": "0.9940",
+     "ask": "0.9910",
      "status": "active",
      "result": ""
     },
     {
      "name": "Republican Party",
-     "last": "0.0120",
-     "bid": "0.0100",
-     "ask": "0.0120",
+     "last": "0.0100",
+     "bid": "0.0090",
+     "ask": "0.0100",
      "status": "active",
      "result": ""
     }
@@ -48,17 +48,17 @@
    "markets": [
     {
      "name": "Xavier Becerra",
-     "last": "0.9900",
-     "bid": "0.9870",
-     "ask": "0.9900",
+     "last": "0.9930",
+     "bid": "0.9880",
+     "ask": "0.9930",
      "status": "active",
      "result": ""
     },
     {
      "name": "Steve Hilton",
-     "last": "0.0150",
-     "bid": "0.0110",
-     "ask": "0.0150",
+     "last": "0.0140",
+     "bid": "0.0080",
+     "ask": "0.0140",
      "status": "active",
      "result": ""
     }
