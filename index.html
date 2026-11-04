@@ -1,0 +1,73 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MIDTERMS 2026 // LIVE</title>
+<style>
+body{background:#05080d;color:#cfe3ff;font:14px/1.4 ui-monospace,Menlo,monospace;margin:0;padding:14px}
+h1{color:#3cf;letter-spacing:3px;font-size:18px;margin:0 0 4px}h2{color:#7fd;font-size:13px;letter-spacing:2px;border-bottom:1px solid #134;padding-bottom:3px}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}.p{background:#0a1220;border:1px solid #1a2b44;border-radius:6px;padding:10px}
+.nr{color:#f90}.D{color:#5af}.R{color:#f55}.s{color:#789;font-size:11px}table{width:100%;border-collapse:collapse}td,th{padding:3px 4px;border-bottom:1px solid #132;text-align:left}
+svg path{stroke:#05080d;stroke-width:.6;cursor:pointer}svg path:hover{opacity:.7}a{color:#3cf}
+</style></head><body>
+<h1>▲ 2026 US MIDTERMS // LIVE TRACKER</h1>
+<div class="s">Last updated: <span id="upd">loading</span> PT · auto-refresh 90s · real data only; anything missing is labeled "Not yet reported"</div>
+<div class="g" style="margin-top:10px">
+<div class="p"><h2>HOUSE (218 for majority)</h2><div id="house"></div></div>
+<div class="p"><h2>SENATE (pre-election 53R-47D)</h2><div id="senate"></div></div>
+</div>
+<div class="p" style="margin-top:12px"><h2>STATE MAP (click a state)</h2><svg id="map" viewBox="0 0 975 610" style="width:100%;max-height:520px"></svg><div id="stinfo" class="s">Click a state for its official results source.</div></div>
+<div class="p" style="margin-top:12px"><h2>SOURCES SIDE BY SIDE</h2><table id="cmp"><tr><th>Item</th><th>Figure</th><th>Source</th><th>Updated (PT)</th></tr></table></div>
+<div class="g" style="margin-top:12px">
+<div class="p"><h2>KEY CA RACES (CA Secretary of State)</h2><div id="ca"></div></div>
+<div class="p"><h2>CALLED RACES</h2><div id="called"></div></div>
+</div>
+<div class="p" style="margin-top:12px"><h2>SOURCES</h2><ul class="s">
+<li>CA races: California Secretary of State results API, api.sos.ca.gov (official, nonpartisan), fetched in browser.</li>
+<li>Polymarket: gamma-api.polymarket.com public API, fetched in browser.</li>
+<li>Kalshi: api.elections.kalshi.com public trade API, fetched every 5 min by a GitHub Action into data/markets.json (Kalshi blocks direct browser calls).</li>
+<li>National seat counts and race calls: The AP is the nonpartisan standard, but its results feed is paid and has no free public JSON. This page does not copy numbers from other outlets, so national counts show "Not yet reported" here. See them at <a href="https://apnews.com/projects/elections-2026/">AP election results</a>.</li>
+</ul></div>
+<script src="https://cdn.jsdelivr.net/npm/d3@7"></script><script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script>
+const NR='<span class="nr">Not yet reported</span>';
+const pt=d=>new Date(d).toLocaleString('en-US',{timeZone:'America/Los_Angeles',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+const pct=x=>x==null||x===''?NR:(parseFloat(x)*100).toFixed(1)+'%';
+const j=u=>fetch(u,{cache:'no-store'}).then(r=>{if(!r.ok)throw r.status;return r.json()});
+const NOAP='Not yet reported (no free AP feed)';
+document.getElementById('house').innerHTML=document.getElementById('senate').innerHTML=
+ `<div>D seats called: <span class="nr">${NOAP}</span></div><div>R seats called: <span class="nr">${NOAP}</span></div><div>Uncalled: <span class="nr">${NOAP}</span></div><div class="s">Live AP counts: <a href="https://apnews.com/projects/elections-2026/">apnews.com</a></div>`;
+let caLead=null,rows=[];
+const SOS={AL:'sos.alabama.gov',AK:'elections.alaska.gov',AZ:'azsos.gov',AR:'sos.arkansas.gov',CA:'electionresults.sos.ca.gov',CO:'sos.state.co.us',CT:'portal.ct.gov/sots',DE:'elections.delaware.gov',FL:'results.elections.myflorida.com',GA:'results.sos.ga.gov',HI:'elections.hawaii.gov',ID:'sos.idaho.gov',IL:'elections.il.gov',IN:'enr.indianavoters.in.gov',IA:'sos.iowa.gov',KS:'sos.ks.gov',KY:'elect.ky.gov',LA:'voterportal.sos.la.gov',ME:'maine.gov/sos',MD:'elections.maryland.gov',MA:'electionstats.state.ma.us',MI:'mielections.us',MN:'electionresults.sos.mn.gov',MS:'sos.ms.gov',MO:'sos.mo.gov',MT:'electionresults.mt.gov',NE:'electionresults.nebraska.gov',NV:'silverstateelection.nv.gov',NH:'sos.nh.gov',NJ:'nj.gov/state/elections',NM:'electionresults.sos.nm.gov',NY:'elections.ny.gov',NC:'er.ncsbe.gov',ND:'results.sos.nd.gov',OH:'liveresults.ohiosos.gov',OK:'results.okelections.gov',OR:'results.oregonvotes.gov',PA:'electionreturns.pa.gov',RI:'elections.ri.gov',SC:'scvotes.gov',SD:'electionresults.sd.gov',TN:'elections.tn.gov',TX:'results.texas-election.com',UT:'electionresults.utah.gov',VT:'electionarchive.vermont.gov',VA:'results.elections.virginia.gov',WA:'results.vote.wa.gov',WV:'sos.wv.gov',WI:'elections.wi.gov',WY:'sos.wyo.gov',DC:'electionresults.dcboe.org'};
+const FIPS={1:'AL',2:'AK',4:'AZ',5:'AR',6:'CA',8:'CO',9:'CT',10:'DE',11:'DC',12:'FL',13:'GA',15:'HI',16:'ID',17:'IL',18:'IN',19:'IA',20:'KS',21:'KY',22:'LA',23:'ME',24:'MD',25:'MA',26:'MI',27:'MN',28:'MS',29:'MO',30:'MT',31:'NE',32:'NV',33:'NH',34:'NJ',35:'NM',36:'NY',37:'NC',38:'ND',39:'OH',40:'OK',41:'OR',42:'PA',44:'RI',45:'SC',46:'SD',47:'TN',48:'TX',49:'UT',50:'VT',51:'VA',53:'WA',54:'WV',55:'WI',56:'WY'};
+let us;
+async function drawMap(){
+ if(!us)us=await j('https://cdn.jsdelivr.net/npm/us-atlas@3/states-albers-10m.json');
+ const path=d3.geoPath();const svg=d3.select('#map');svg.selectAll('*').remove();
+ svg.selectAll('path').data(topojson.feature(us,us.objects.states).features).join('path').attr('d',path)
+  .attr('fill',d=>{const s=FIPS[+d.id];return s==='CA'&&caLead?(caLead==='Dem'?'#2a6fd6':'#c63a3a'):'#26344a'})
+  .on('click',(e,d)=>{const s=FIPS[+d.id];document.getElementById('stinfo').innerHTML=`<b>${s}</b>: ${s==='CA'?'Governor leader (CA SOS): '+(caLead||'Not yet reported'):'Not yet reported on this page (no free AP feed)'} · official results: <a target=_blank href="https://${SOS[s]}">${SOS[s]}</a>`})
+  .append('title').text(d=>d.properties.name);
+}
+function cand(r,src,t){return `<div class="s">${r.Reporting} · ${src} · ${t}</div><table>`+r.candidates.map(c=>`<tr><td class="${c.Party==='Dem'?'D':'R'}">${c.Name} (${c.Party})</td><td>${+c.Votes.replace(/,/g,'')>0?c.Votes+' ('+c.Percent+'%)':NR}</td></tr>`).join('')+'</table>'}
+async function refresh(){
+ const now=new Date();rows=[];const T=pt(now);let ca='',called=[];
+ for(const [k,u,lab] of [['gov','https://api.sos.ca.gov/returns/governor','Governor'],['ca20','https://api.sos.ca.gov/returns/us-rep/district/20','CA-20']]){
+  try{const r=await j(u);ca+=`<h3>${lab}</h3>`+cand(r,'CA SOS',`SOS time ${r.ReportingTime}, fetched ${T}`);
+   const tot=r.candidates.reduce((a,c)=>a+ +c.Votes.replace(/,/g,''),0);
+   if(k==='gov')caLead=tot>0?[...r.candidates].sort((a,b)=>+b.Votes.replace(/,/g,'')- +a.Votes.replace(/,/g,''))[0].Party:null;
+   r.candidates.forEach(c=>rows.push([lab+' '+c.Name+' votes',tot>0?c.Votes+' ('+c.Percent+'%)':NR,'CA Secretary of State',r.ReportingTime+' (SOS)']));
+   rows.push([lab+' votes','Not yet reported (no free AP feed)','AP','']);
+  }catch(e){ca+=`<h3>${lab}</h3>${NR} (CA SOS fetch failed)`}}
+ document.getElementById('ca').innerHTML=ca;
+ const poly={House:'which-party-will-win-the-house-in-2026',Senate:'which-party-will-win-the-senate-in-2026','CA Governor':'california-governor-election-2026','CA-20':'ca-20-house-election-winner'};
+ for(const [lab,slug] of Object.entries(poly)){try{const e=(await j('https://gamma-api.polymarket.com/events?slug='+slug))[0];
+  e.markets.filter(m=>m.outcomePrices&&m.groupItemTitle&&m.groupItemTitle.length>1).forEach(m=>{const p=JSON.parse(m.outcomePrices)[0];rows.push([lab+' odds: '+m.groupItemTitle,pct(p),'Polymarket',pt(m.updatedAt||now)]);if(m.closed&&p==='1')called.push(lab+': '+m.groupItemTitle+' (Polymarket resolved)')})}catch(x){rows.push([lab+' odds',NR,'Polymarket',T])}}
+ try{const k=await j('data/markets.json?'+Date.now());const kt=pt(k.fetched_utc);
+  for(const [key,lab] of [['house','House'],['senate','Senate'],['ca_gov','CA Governor']]){const ev=k.kalshi[key];(ev.markets||[]).forEach(m=>{rows.push([lab+' odds: '+m.name,pct(m.last),'Kalshi',kt]);if(m.result==='yes')called.push(lab+': '+m.name+' (Kalshi settled)')})}
+  rows.push(['CA-20 odds','Not yet reported (no Kalshi market found)','Kalshi',kt]);}catch(x){rows.push(['Kalshi odds',NR,'Kalshi',T])}
+ rows.push(['House seats called','Not yet reported (no free AP feed)','AP','']);rows.push(['Senate seats called','Not yet reported (no free AP feed)','AP','']);
+ rows.sort((a,b)=>a[0].localeCompare(b[0]));
+ document.getElementById('cmp').innerHTML='<tr><th>Item</th><th>Figure</th><th>Source</th><th>Updated (PT)</th></tr>'+rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="s">${r[3]}</td></tr>`).join('');
+ document.getElementById('called').innerHTML=(called.length?called.map(c=>'<div>'+c+'</div>').join(''):NR)+'<div class="s">Official race calls come from AP (paid feed, not shown). Only market settlements listed here. AP calls: <a href="https://apnews.com/projects/elections-2026/">apnews.com</a></div>';
+ document.getElementById('upd').textContent=T;drawMap();
+}
+refresh();setInterval(refresh,90000);
+</script></body></html>
